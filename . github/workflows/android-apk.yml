@@ -1,0 +1,36 @@
+
+name: Build IRON BREACH APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Extract game
+        run: |
+          unzip -q IRON_BREACH_ANDROID_APK_BUILD.zip -d project
+      - name: Build APK
+        run: |
+          cd project/game_review
+          npm install
+          npm install @capacitor/android@^7.4.3
+          npm run build
+          npx cap add android
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IRON-BREACH-APK
+          path: project/game_review/android/app/build/outputs/apk/debug/app-debug.apk
